@@ -290,8 +290,8 @@ $HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie/PHPCompatibil
 # Node.js (installed as user)
 ENV \
 	NVM_VERSION=0.35.3 \
-	NODE_VERSION=10.18.0 \
-	YARN_VERSION=1.22.4
+	NODE_VERSION=10.15.0 \
+	YARN_VERSION=1.12.3
 # Don't use -x here, as the output may be excessive
 RUN set -e; \
 	# NVM and a defaut Node.js version
@@ -457,7 +457,7 @@ RUN \
 USER root
 
 RUN \
-	curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+	curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 
 RUN set -xe; \
 	apt-get -y --no-install-recommends install nodejs
