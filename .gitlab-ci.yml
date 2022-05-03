@@ -15,6 +15,9 @@ build-dev:
     - master
   script:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - echo "building push-server"
+    - docker build -t $CI_REGISTRY_IMAGE:push-server ./push-server
+    - docker push $CI_REGISTRY_IMAGE:push-server
     - echo "building php7.4-node"
     - docker build -t $CI_REGISTRY_IMAGE:php7.4 ./php-7.4-node
     - docker push $CI_REGISTRY_IMAGE:php7.4
