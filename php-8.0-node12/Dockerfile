@@ -93,8 +93,8 @@ RUN set -xe; \
 	# gosu is used instead of sudo to start the main container process (pid 1) in a docker friendly way.
 	# https://github.com/tianon/gosu
 	curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-$(dpkg --print-architecture)" -o /usr/local/bin/gosu; \
-	chown root:"$(id -gn docker)" /usr/local/bin/gosu; \
-	chmod +sx /usr/local/bin/gosu; \
+	chmod +x /usr/local/bin/gosu; \
+	gosu nobody tue; \
 	# gomplate (to process configuration templates in startup.sh)
 	curl -fsSL https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/local/bin/gomplate; \
 	chmod +x /usr/local/bin/gomplate
