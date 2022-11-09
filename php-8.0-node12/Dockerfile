@@ -94,7 +94,7 @@ RUN set -xe; \
 	# https://github.com/tianon/gosu
 	curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-$(dpkg --print-architecture)" -o /usr/local/bin/gosu; \
 	chmod +x /usr/local/bin/gosu; \
-	gosu nobody tue; \
+	gosu nobody true; \
 	# gomplate (to process configuration templates in startup.sh)
 	curl -fsSL https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/local/bin/gomplate; \
 	chmod +x /usr/local/bin/gomplate
