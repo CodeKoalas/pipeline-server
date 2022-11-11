@@ -1,4 +1,4 @@
-FROM php:8.0-fpm-buster as cli
+FROM php:8.0.25-fpm-buster as cli
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
