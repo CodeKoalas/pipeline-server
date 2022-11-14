@@ -1,4 +1,4 @@
-FROM php:7.4-fpm-buster as cli
+FROM php:8.1-fpm-buster as cli
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
@@ -18,7 +18,6 @@ RUN set -xe; \
 		gnupg \
 		locales \
 		wget \
-
 	;\
 	# Cleanup
 	apt-get clean; rm -rf /var/lib/apt/lists/*
@@ -216,10 +215,10 @@ RUN set -xe; \
 	apt-get clean; rm -rf /var/lib/apt/lists/*
 
 # PHP tools (installed globally)
-ENV COMPOSER_VERSION=2.0.0-RC1 \
+ENV COMPOSER_VERSION=2.3.10 \
 	DRUSH_VERSION=8.3.5 \
-	DRUSH_LAUNCHER_VERSION=0.6.0 \
-	DRUPAL_CHECK_VERSION=1.1.2 \
+	DRUSH_LAUNCHER_VERSION=0.10.1 \
+	DRUPAL_CHECK_VERSION=1.4.0 \
 	DRUPAL_CONSOLE_LAUNCHER_VERSION=1.9.4 \
 	WPCLI_VERSION=2.4.0 \
 	BLACKFIRE_VERSION=1.36.0 \
@@ -227,7 +226,7 @@ ENV COMPOSER_VERSION=2.0.0-RC1 \
 	ACQUIACLI_VERSION=2.0.6
 RUN set -xe; \
 	# Composer
-	curl -fsSL "https://github.com/composer/composer/releases/download/${COMPOSER_VERSION}/composer.phar" -o /usr/local/bin/composer; \
+	curl -fsSL "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" -o /usr/local/bin/composer; \
 	# Drush 8 (global fallback)
 	curl -fsSL "https://github.com/drush-ops/drush/releases/download/${DRUSH_VERSION}/drush.phar" -o /usr/local/bin/drush8; \
 	# Drush Launcher
@@ -235,17 +234,17 @@ RUN set -xe; \
 	# Drupal Console Launcher
 	curl -fsSL "https://github.com/hechoendrupal/drupal-console-launcher/releases/download/${DRUPAL_CONSOLE_LAUNCHER_VERSION}/drupal.phar" -o /usr/local/bin/drupal; \
 	# Wordpress CLI
-	curl -fsSL "https://github.com/wp-cli/wp-cli/releases/download/v${WPCLI_VERSION}/wp-cli-${WPCLI_VERSION}.phar" -o /usr/local/bin/wp; \
+	# curl -fsSL "https://github.com/wp-cli/wp-cli/releases/download/v${WPCLI_VERSION}/wp-cli-${WPCLI_VERSION}.phar" -o /usr/local/bin/wp; \
 	# Blackfire CLI
-	curl -fsSL "https://packages.blackfire.io/binaries/blackfire-agent/${BLACKFIRE_VERSION}/blackfire-cli-linux_static_amd64" -o /usr/local/bin/blackfire; \
+	# curl -fsSL "https://packages.blackfire.io/binaries/blackfire-agent/${BLACKFIRE_VERSION}/blackfire-cli-linux_static_amd64" -o /usr/local/bin/blackfire; \
 	# Platform.sh CLI
-	curl -fsSL "https://github.com/platformsh/platformsh-cli/releases/download/v${PLATFORMSH_CLI_VERSION}/platform.phar" -o /usr/local/bin/platform; \
+	# curl -fsSL "https://github.com/platformsh/platformsh-cli/releases/download/v${PLATFORMSH_CLI_VERSION}/platform.phar" -o /usr/local/bin/platform; \
 	# Drupal Check CLI
-	curl -fsSL "https://github.com/mglaman/drupal-check/releases/download/${DRUPAL_CHECK_VERSION}/drupal-check.phar" -o /usr/local/bin/drupal-check; \
+	# curl -fsSL "https://github.com/mglaman/drupal-check/releases/download/${DRUPAL_CHECK_VERSION}/drupal-check.phar" -o /usr/local/bin/drupal-check; \
 	# Acquia CLI
-	curl -fsSL "https://github.com/typhonius/acquia_cli/releases/download/${ACQUIACLI_VERSION}/acquiacli.phar" -o /usr/local/bin/acquiacli; \
+	# curl -fsSL "https://github.com/typhonius/acquia_cli/releases/download/${ACQUIACLI_VERSION}/acquiacli.phar" -o /usr/local/bin/acquiacli; \
 	# Make all downloaded binaries executable in one shot
-	(cd /usr/local/bin && chmod +x composer drupal-check drush8 drush drupal wp blackfire platform acquiacli);
+	(cd /usr/local/bin && chmod +x composer drush8 drush drupal);
 
 # All further RUN commands will run as the "docker" user
 USER docker
@@ -256,42 +255,36 @@ SHELL ["/bin/bash", "-c"]
 ENV MG_CODEGEN_VERSION=1.11.0 \
 	TERMINUS_VERSION=2.3.0 \
 	DRUSH_BACKDROP_VERSION=1.2.0
-# Don't use -x here, as the output may be excessive
+
 RUN set -e; \
 	\
 	# Set drush8 as a global fallback for Drush Launcher
 	echo -e "\n""export DRUSH_LAUNCHER_FALLBACK=/usr/local/bin/drush8" >> $HOME/.profile; \
 	# Composer based dependencies
-	# Add composer bin directory to PATH
+	# Add composer bin project level and global directories to PATH
+	# Project level comes first and thus takes precedence over the global one
+	echo -e "\n"'export PATH="$PATH:${PROJECT_ROOT:-/var/www}/vendor/bin"' >> $HOME/.profile; \
 	echo -e "\n"'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> $HOME/.profile; \
 	# Reload updated PATH from profile to make composer/drush/etc. visible below
 	. $HOME/.profile; \
-	# Install cgr to use it in-place of `composer global require`
-	composer global require consolidation/cgr >/dev/null; \
 	# Drupal Coder & WP Coding Standards w/ a matching version of PHP_CodeSniffer
-	composer global require drupal/coder wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp >/dev/null; \
+	# Set allow-plugins. See https://getcomposer.org/allow-plugins
+	composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true; \
+	composer global require drupal/coder wp-coding-standards/wpcs phpcompatibility/phpcompatibility-wp; \
+	# Don't fix the indentation or installed_paths will not be set correctly
 	phpcs --config-set installed_paths \
 $HOME/.composer/vendor/drupal/coder/coder_sniffer/,\
 $HOME/.composer/vendor/wp-coding-standards/wpcs/,\
 $HOME/.composer/vendor/phpcompatibility/php-compatibility/PHPCompatibility/,\
 $HOME/.composer/vendor/phpcompatibility/phpcompatibility-wp/PHPCompatibilityWP,\
 $HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie/PHPCompatibilityParagonieRandomCompat; \
-	# Magento2 Code Generator
-	cgr staempfli/magento2-code-generator:${MG_CODEGEN_VERSION} >/dev/null; \
-	# Terminus
-	cgr pantheon-systems/terminus:${TERMINUS_VERSION} >/dev/null; \
 	# Cleanup
-	composer clear-cache; \
-	\
-	# Drush modules
-	drush dl registry_rebuild --default-major=7 --destination=$HOME/.drush >/dev/null; \
-	mkdir $HOME/.drush/backdrop && curl -fsSL "https://github.com/backdrop-contrib/backdrop-drush-extension/archive/${DRUSH_BACKDROP_VERSION}.tar.gz" | tar xz -C $HOME/.drush/backdrop --strip-components 1; \
-	drush cc drush
+	composer clear-cache
 
 # Node.js (installed as user)
 ENV \
 	NVM_VERSION=0.35.3 \
-	NODE_VERSION=12.18.1 \
+	NODE_VERSION=18.2.0 \
 	YARN_VERSION=1.22.4
 # Don't use -x here, as the output may be excessive
 RUN set -e; \
@@ -431,7 +424,7 @@ USER docker
 ARG HOME=/home/docker
 
 ENV \
-	CODE_SERVER_VERSION=3.4.1 \
+	CODE_SERVER_VERSION=4.5.0 \
 	VSCODE_HOME="${HOME}/code-server" \
 	VSCODE_EXT_DIRECTORY="${HOME}/code-server/extensions" \
 	VSCODE_XDEBUG_VERSION=1.13.0 \
@@ -458,7 +451,7 @@ RUN \
 USER root
 
 RUN \
-	curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+	curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 
 RUN set -xe; \
 	apt-get -y --no-install-recommends install nodejs
