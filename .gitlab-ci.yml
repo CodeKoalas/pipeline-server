@@ -27,4 +27,7 @@ build-dev:
     - echo "building php8.0-node12"
     - docker build -t $CI_REGISTRY_IMAGE:php8.0-node12 ./php-8.0-node12
     - docker push $CI_REGISTRY_IMAGE:php8.0-node12
+    - echo "building php8.1-node-18"
+    - docker build -t $CI_REGISTRY_IMAGE:php8.1-node18 ./php-8.1-node18
+    - docker push $CI_REGISTRY_IMAGE:php8.1-node18
 
