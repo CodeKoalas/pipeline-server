@@ -295,7 +295,7 @@ RUN set -e; \
 	. $HOME/.profile; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
-	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null \
+	npm install -g yarn \
 	npm install npm@latest -g
 
 # Ruby (installed as user)
