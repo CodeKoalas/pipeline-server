@@ -295,7 +295,7 @@ RUN set -e; \
 	. $HOME/.profile; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
-	npm install -g yarn \
+	npm install -g yarn; \
 	npm install npm@latest -g
 
 # Ruby (installed as user)
