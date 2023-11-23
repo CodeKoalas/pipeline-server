@@ -283,8 +283,8 @@ $HOME/.composer/vendor/phpcompatibility/phpcompatibility-paragonie/PHPCompatibil
 
 # Node.js (installed as user)
 ENV \
-	NVM_VERSION=0.35.3 \
-	NODE_VERSION=18.2.0 \
+	NVM_VERSION=0.39.5 \
+	NODE_VERSION=18.18.0 \
 	YARN_VERSION=1.22.4
 # Don't use -x here, as the output may be excessive
 RUN set -e; \
@@ -295,8 +295,8 @@ RUN set -e; \
 	. $HOME/.profile; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
-	npm install -g yarn; \
-	npm install npm@latest -g
+	npm install npm@latest -g; \
+	npm install --global yarn
 
 # Ruby (installed as user)
 ENV \
